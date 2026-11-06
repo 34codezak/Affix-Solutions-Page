@@ -34,8 +34,7 @@ const submitButton =
    GOOGLE APPS SCRIPT API
 ========================================================= */
 
-const GOOGLE_SCRIPT_URL =
-    "YOUR_APPS_SCRIPT_WEB_APP_URL";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwsoIm_WvhFOmJjriGmKUjRMut6iYz_m0MjF-V3ElQPMTSsm04NhAXxLy2Fauq9Xug/exec";
 
 
 /* =========================================================
