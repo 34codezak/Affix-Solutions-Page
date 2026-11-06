@@ -1,5 +1,5 @@
+
 /* =========================================================
-   KUTUS TECHNICAL SERVICES
    MAIN JAVASCRIPT
 ========================================================= */
 
@@ -8,171 +8,163 @@
    ELEMENTS
 ========================================================= */
 
-const menuToggle = document.getElementById("menuToggle");
-const mobileMenu = document.getElementById("mobileMenu");
-const navbar = document.getElementById("navbar");
-const year = document.getElementById("year");
-const contactForm = document.getElementById("contactForm");
+const mobileMenuToggle =
+    document.getElementById("mobileMenuToggle");
+
+const mobileMenu =
+    document.getElementById("mobileMenu");
+
+const navbar =
+    document.getElementById("navbar");
+
+const year =
+    document.getElementById("year");
+
+const contactForm =
+    document.getElementById("contactForm");
+
+const formStatus =
+    document.getElementById("formStatus");
+
+const submitButton =
+    contactForm?.querySelector('button[type="submit"]');
+
+
+/* =========================================================
+   GOOGLE APPS SCRIPT API
+========================================================= */
+
+const GOOGLE_SCRIPT_URL =
+    "YOUR_APPS_SCRIPT_WEB_APP_URL";
 
 
 /* =========================================================
    MOBILE MENU
 ========================================================= */
 
-function openMenu() {
-
-    if (!menuToggle || !mobileMenu) return;
-
-    mobileMenu.classList.add("active");
-    menuToggle.classList.add("active");
-
-    menuToggle.setAttribute("aria-expanded", "true");
-    menuToggle.setAttribute(
-        "aria-label",
-        "Close navigation menu"
-    );
-}
-
-
 function closeMenu() {
 
-    if (!menuToggle || !mobileMenu) return;
+    if (!mobileMenuToggle) return;
 
-    mobileMenu.classList.remove("active");
-    menuToggle.classList.remove("active");
+    mobileMenuToggle.checked = false;
 
-    menuToggle.setAttribute("aria-expanded", "false");
-    menuToggle.setAttribute(
-        "aria-label",
-        "Open navigation menu"
+    mobileMenuToggle.dispatchEvent(
+        new Event("change")
     );
+
 }
 
 
-function toggleMenu() {
+if (mobileMenuToggle) {
 
-    if (!mobileMenu) return;
+    const menuLabel =
+        document.querySelector(
+            'label[for="mobileMenuToggle"]'
+        );
 
-    const isOpen =
-        mobileMenu.classList.contains("active");
+    function updateMenuState() {
 
-    if (isOpen) {
-        closeMenu();
-    } else {
-        openMenu();
+        const isOpen =
+            mobileMenuToggle.checked;
+
+        if (menuLabel) {
+
+            menuLabel.setAttribute(
+                "aria-expanded",
+                String(isOpen)
+            );
+
+            menuLabel.setAttribute(
+                "aria-label",
+                isOpen
+                    ? "Close navigation menu"
+                    : "Open navigation menu"
+            );
+
+        }
+
     }
-}
+
+    mobileMenuToggle.addEventListener(
+        "change",
+        updateMenuState
+    );
+
+    updateMenuState();
 
 
-/* =========================================================
-   HAMBURGER CLICK
-========================================================= */
+    // Close menu when a navigation link is clicked
 
-if (menuToggle) {
+    if (mobileMenu) {
 
-    menuToggle.addEventListener(
+        mobileMenu
+            .querySelectorAll("a")
+            .forEach(link => {
+
+                link.addEventListener(
+                    "click",
+                    closeMenu
+                );
+
+            });
+
+    }
+
+
+    // Close when clicking outside
+
+    document.addEventListener(
         "click",
         function (event) {
 
-            event.stopPropagation();
+            const clickedInsideMenu =
+                mobileMenu?.contains(event.target);
 
-            toggleMenu();
+            const clickedToggle =
+                menuLabel?.contains(event.target);
 
-        }
-    );
-
-}
-
-
-/* =========================================================
-   CLOSE MOBILE MENU WHEN LINK IS CLICKED
-========================================================= */
-
-if (mobileMenu) {
-
-    const mobileLinks =
-        mobileMenu.querySelectorAll("a");
-
-    mobileLinks.forEach(function (link) {
-
-        link.addEventListener(
-            "click",
-            function () {
+            if (
+                mobileMenuToggle.checked &&
+                !clickedInsideMenu &&
+                !clickedToggle
+            ) {
 
                 closeMenu();
 
             }
-        );
 
-    });
+        }
+    );
+
+
+    // Escape key
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Escape") {
+                closeMenu();
+            }
+
+        }
+    );
+
+
+    // Close on desktop resize
+
+    window.addEventListener(
+        "resize",
+        function () {
+
+            if (window.innerWidth > 900) {
+                closeMenu();
+            }
+
+        }
+    );
 
 }
-
-
-/* =========================================================
-   CLOSE WHEN CLICKING OUTSIDE THE MENU
-========================================================= */
-
-document.addEventListener(
-    "click",
-    function (event) {
-
-        if (!mobileMenu || !menuToggle) return;
-
-        const clickedInsideMenu =
-            mobileMenu.contains(event.target);
-
-        const clickedButton =
-            menuToggle.contains(event.target);
-
-        if (
-            mobileMenu.classList.contains("active") &&
-            !clickedInsideMenu &&
-            !clickedButton
-        ) {
-
-            closeMenu();
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   CLOSE MOBILE MENU WITH ESCAPE
-========================================================= */
-
-document.addEventListener(
-    "keydown",
-    function (event) {
-
-        if (event.key === "Escape") {
-
-            closeMenu();
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   RESPONSIVE MENU
-========================================================= */
-
-window.addEventListener(
-    "resize",
-    function () {
-
-        if (window.innerWidth > 900) {
-
-            closeMenu();
-
-        }
-
-    }
-);
 
 
 /* =========================================================
@@ -196,8 +188,7 @@ function updateNavbar() {
         navbar.style.background =
             "rgba(8, 8, 8, 0.94)";
 
-        navbar.style.boxShadow =
-            "none";
+        navbar.style.boxShadow = "none";
 
     }
 
@@ -225,85 +216,132 @@ if (year) {
 
 
 /* =========================================================
-   CONTACT FORM → WHATSAPP
+   CONTACT FORM → GOOGLE SHEETS
 ========================================================= */
 
 if (contactForm) {
 
     contactForm.addEventListener(
         "submit",
-        function (event) {
+        async function (event) {
 
             event.preventDefault();
 
+            if (submitButton?.disabled) return;
 
-            const name =
-                document.getElementById("name")
-                    ?.value.trim() || "";
 
-            const phone =
-                document.getElementById("phone")
-                    ?.value.trim() || "";
+            // Browser validation
 
-            const service =
-                document.getElementById("service")
-                    ?.value.trim() || "";
+            if (!contactForm.checkValidity()) {
 
-            const message =
-                document.getElementById("message")
-                    ?.value.trim() || "";
+                contactForm.reportValidity();
+                return;
+
+            }
 
 
             if (
-                !name ||
-                !phone ||
-                !service ||
-                !message
+                !GOOGLE_SCRIPT_URL ||
+                GOOGLE_SCRIPT_URL.includes("YOUR_APPS_SCRIPT")
             ) {
 
-                alert(
-                    "Please complete all the required fields."
-                );
+                formStatus.textContent =
+                    "Contact form is not configured yet.";
 
                 return;
 
             }
 
 
-            const whatsappNumber =
-                "254753563851";
+            const formData =
+                new FormData(contactForm);
 
 
-            const whatsappMessage =
-`Hello Kutus Technical Services.
+            // Basic frontend validation
 
-My name is ${name}.
-Phone: ${phone}
+            const name =
+                String(formData.get("name") || "").trim();
 
-Service needed:
-${service}
+            const phone =
+                String(formData.get("phone") || "").trim();
 
-Problem / Request:
-${message}
+            const service =
+                String(formData.get("service") || "").trim();
 
-I would like to get a quote or arrange a service visit.`;
+            const message =
+                String(formData.get("message") || "").trim();
 
 
-            const encodedMessage =
-                encodeURIComponent(
-                    whatsappMessage
+            if (!name || !phone || !service || !message) {
+
+                formStatus.textContent =
+                    "Please complete all required fields.";
+
+                return;
+
+            }
+
+
+            // Disable button during submission
+
+            const originalButtonText =
+                submitButton.textContent;
+
+            if (submitButton) {
+
+                submitButton.disabled = true;
+                submitButton.textContent = "Submitting...";
+
+            }
+
+            formStatus.textContent =
+                "Sending your service request...";
+
+
+            try {
+
+                await fetch(GOOGLE_SCRIPT_URL, {
+
+                    method: "POST",
+
+                    mode: "no-cors",
+
+                    body: new URLSearchParams(formData)
+
+                });
+
+
+                formStatus.textContent =
+                    "Your request has been sent to the submission endpoint. " +
+                    "Spreadsheet delivery cannot be confirmed here. " +
+                    "For urgent assistance, contact us on WhatsApp.";
+
+
+                // Keep entered data until delivery can be confirmed.
+
+
+            } catch (error) {
+
+                console.error(
+                    "Contact form submission error:",
+                    error
                 );
 
+                formStatus.textContent =
+                    "Unable to send your request. Please try again or contact us on WhatsApp.";
 
-            const whatsappURL =
-                `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+            } finally {
 
+                if (submitButton) {
 
-            window.open(
-                whatsappURL,
-                "_blank",
-                "noopener,noreferrer"
-            );
+                    submitButton.disabled = false;
+
+                    submitButton.textContent =
+                        originalButtonText;
+
+                }
+
+            }
 
         }
     );
@@ -326,42 +364,28 @@ document
                 const targetID =
                     this.getAttribute("href");
 
-
-                if (
-                    !targetID ||
-                    targetID === "#"
-                ) {
-
+                if (!targetID || targetID === "#") {
                     return;
-
                 }
-
 
                 const target =
                     document.querySelector(targetID);
 
-
                 if (!target) {
-
                     return;
-
                 }
 
-
                 event.preventDefault();
-
 
                 const navbarHeight =
                     navbar
                         ? navbar.offsetHeight
                         : 0;
 
-
                 const targetPosition =
                     target.getBoundingClientRect().top +
                     window.scrollY -
                     navbarHeight;
-
 
                 window.scrollTo({
 
@@ -382,5 +406,5 @@ document
 ========================================================= */
 
 console.log(
-    "Kutus Technical Services website loaded successfully."
+    "Affix website loaded successfully."
 );
